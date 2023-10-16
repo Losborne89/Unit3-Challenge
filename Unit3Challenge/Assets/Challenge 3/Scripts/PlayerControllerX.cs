@@ -6,7 +6,7 @@ public class PlayerControllerX : MonoBehaviour
 {
     public bool gameOver;
 
-    public float floatForce;
+    private float floatForce = 3f;
     private float gravityModifier = 1.5f;
     private Rigidbody playerRb;
 
@@ -16,11 +16,13 @@ public class PlayerControllerX : MonoBehaviour
     private AudioSource playerAudio;
     public AudioClip moneySound;
     public AudioClip explodeSound;
+    public AudioClip bouncySound;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        playerRb = GetComponent<Rigidbody>();
         Physics.gravity *= gravityModifier;
         playerAudio = GetComponent<AudioSource>();
 
@@ -36,6 +38,12 @@ public class PlayerControllerX : MonoBehaviour
         if (Input.GetKey(KeyCode.Space) && !gameOver)
         {
             playerRb.AddForce(Vector3.up * floatForce);
+        }
+
+        // Stops balloon from floating too high
+        if (playerRb.transform.position.y > 15)
+        {
+            playerRb.velocity = Vector3.zero;
         }
     }
 
@@ -58,6 +66,18 @@ public class PlayerControllerX : MonoBehaviour
             playerAudio.PlayOneShot(moneySound, 1.0f);
             Destroy(other.gameObject);
 
+        }
+        // If balloon touches ground, will bounce
+        else if (other.gameObject.CompareTag("Ground") && gameOver == false)
+        {
+            playerRb.AddForce(Vector3.up * 5f, ForceMode.Impulse);
+            playerAudio.PlayOneShot(bouncySound, 1f);
+        }
+
+        else if (other.gameObject.CompareTag("Ground"))
+        {
+            gameOver = true;
+            Debug.Log("Game Over!");
         }
 
     }
